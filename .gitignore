@@ -1,0 +1,6 @@
+*.env
+
+obj/
+bin/
+.vs/
+.gitlab-ci.yml
