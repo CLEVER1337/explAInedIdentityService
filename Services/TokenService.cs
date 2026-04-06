@@ -1,3 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+
 public class TokenService
 {
     private readonly IConfiguration _configuration;
@@ -6,7 +12,7 @@ public class TokenService
     {
         _configuration = configuration;
     }
-
+    
     public string GenerateToken(IdentityUser user)
     {
         var claims = new List<Claim>
