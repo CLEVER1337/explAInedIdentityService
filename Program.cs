@@ -13,6 +13,12 @@ builder.Configuration.AddJsonFile("appsettings.json");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration["ConnectionStrings:PostgreSQL"]));
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["ConnectionStrings:Redis"];
+    options.InstanceName = "explAIned_";
+});
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
