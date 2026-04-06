@@ -7,10 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 public class TokenService
 {
     private readonly IConfiguration _configuration;
+    private readonly CacheService _cacheService;
 
-    public TokenService(IConfiguration configuration)
+    public TokenService(IConfiguration configuration, CacheService cacheService)
     {
         _configuration = configuration;
+        _cacheService = cacheService;
     }
     
     public string GenerateToken(IdentityUser user)

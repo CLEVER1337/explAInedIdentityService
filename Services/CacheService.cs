@@ -17,10 +17,18 @@ public class CacheService
         {
             AbsoluteExpirationRelativeToNow = expitarionTime
         });
+
+        _logger.LogInformation($"Redis added string: {key} - {value}");
     }
 
     public async Task<string?> GetValue(string key)
     {
         return await _cache.GetStringAsync(key);
+    }
+
+    public async Task RemoveValue(string key)
+    {
+        await _cache.RemoveAsync(key);
+        _logger.LogInformation($"Redis: removed string: {key}");
     }
 }
