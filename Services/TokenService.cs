@@ -36,7 +36,7 @@ public class TokenService
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            // new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -53,5 +53,17 @@ public class TokenService
         };
 
         return GenerateToken(claims, Convert.ToDouble(_configuration["Jwt:RefreshDurationInMinutes"]));
+    }
+
+    public async Task BlackListToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        var exp = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+        var expSeconds = long.Parse(exp);
+        var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
+        var remainingTime = expirationTime - DateTimeOffset.UtcNow;
+
+        await _cacheService.SetValue(token, "", remainingTime);
     }
 }
