@@ -55,6 +55,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<CacheService>();
 
 var app = builder.Build();
 

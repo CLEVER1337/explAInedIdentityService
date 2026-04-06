@@ -7,15 +7,18 @@ public class SessionController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly ILogger<SessionController> _logger;
+    private readonly TokenService _tokenService;
 
     public SessionController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        ILogger<SessionController> logger)
+        ILogger<SessionController> logger,
+        TokenService tokenService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _logger = logger;
+        _tokenService = tokenService;
     }
 
     [Route("session")]
@@ -33,7 +36,8 @@ public class SessionController : Controller
         if (result.Succeeded)
         {
             _logger.LogInformation("User logged in.");
-            return Ok(new { success = true });
+            var accessToken = _tokenService.GenerateAccessToken(await _userManager.FindByNameAsync(model.Email));
+            return Ok(new { accessToken });
         }
 
         return Unauthorized(new { message = "Invalid login attempt." });

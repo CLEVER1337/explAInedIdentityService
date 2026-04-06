@@ -42,34 +42,4 @@ public class AccountController : Controller
 
         return BadRequest();
     }
-
-    // [HttpPost]
-    // public async Task<IActionResult> Login([FromBody] LoginViewModel model)
-    // {
-    //     await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-    //     var result = await _signInManager.PasswordSignInAsync(
-    //         model.Email,
-    //         model.Password,
-    //         model.RememberMe,
-    //         lockoutOnFailure: false);
-
-    //     if (result.Succeeded)
-    //     {
-    //         _logger.LogInformation("User logged in.");
-    //         return Ok(new { success = true });
-    //     }
-
-    //     return Unauthorized(new { message = "Invalid login attempt." });
-    // }
-
-    // [HttpPost]
-    // public async Task<IActionResult> Logout()
-    // {
-    //     _logger.LogInformation(_userManager.GetUserAsync(User)?.Result?.Nickname ?? "No user");
-    //     _logger.LogInformation(_signInManager.IsSignedIn(User).ToString());
-    //     await _signInManager.SignOutAsync();
-    //     _logger.LogInformation("User logged out.");
-    //     return Ok(new { message = "Logged out." });
-    // }
 }
