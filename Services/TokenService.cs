@@ -57,20 +57,26 @@ public class TokenService
         return GenerateToken(claims, Convert.ToDouble(_configuration["Jwt:RefreshDurationInMinutes"]));
     }
 
-    public async Task<(string accessToken, string refreshToken)> RefreshTokens(string refreshToken)
+    public async Task<string> GetTokenField(string token, string field)
     {
         var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(refreshToken);
-        
-        var type = jwtToken.Claims.FirstOrDefault(c => c.Type == "typ")?.Value;
+        var jwtToken = handler.ReadJwtToken(token);
+        var claim = jwtToken.Claims.FirstOrDefault(c => c.Type == field);
+
+        return claim?.Value;
+    }
+
+    public async Task<(string accessToken, string refreshToken)> RefreshTokens(string refreshToken)
+    {
+        var type = await GetTokenField(refreshToken, JwtRegisteredClaimNames.Typ);
 
         if (type != "refresh")
         {
             throw new InvalidOperationException("Only refresh tokens can be blacklisted.");
         }
 
-        var email = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email)?.Value;
-        var id = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+        var email = await GetTokenField(refreshToken, JwtRegisteredClaimNames.Email);
+        var id = await GetTokenField(refreshToken, JwtRegisteredClaimNames.Sub);
 
         if (email == null)
             throw new SecurityTokenException("Invalid refresh token.");
@@ -89,16 +95,14 @@ public class TokenService
 
     public async Task BlackListToken(string token)
     {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var type = jwtToken.Claims.FirstOrDefault(c => c.Type == "typ")?.Value;
+        var type = await GetTokenField(token, JwtRegisteredClaimNames.Typ);
 
         if (type != "refresh")
         {
             throw new InvalidOperationException("Only refresh tokens can be blacklisted.");
         }
 
-        var exp = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+        var exp = await GetTokenField(token, "exp");
         var expSeconds = long.Parse(exp);
         var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expSeconds);
         var remainingTime = expirationTime - DateTimeOffset.UtcNow;
