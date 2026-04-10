@@ -81,6 +81,12 @@ public class TokenService
         return (newAccessToken, newRefreshToken);
     }
 
+    public async Task<bool> IsBlackListed(string token)
+    {
+        var blackListedToken = await _cacheService.GetValue(token);
+        return blackListedToken != null;
+    }
+
     public async Task BlackListToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();

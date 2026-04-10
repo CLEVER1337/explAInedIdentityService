@@ -53,6 +53,13 @@ public class SessionController : Controller
         {
             var refreshToken = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ')[1];
 
+            if(_tokenService.IsBlackListed(refreshToken).Result)
+            {
+                _logger.LogWarning("Attempt to logout with already blacklisted token.");
+                
+                return BadRequest(new { message = "Invalid refresh token." });
+            }
+
             var refreshTask = _tokenService.RefreshTokens(refreshToken);
 
             var blackListTask = _tokenService.BlackListToken(refreshToken);
@@ -80,12 +87,21 @@ public class SessionController : Controller
     {
         try
         {
+            var refreshToken = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ')[1];
+
+            if(_tokenService.IsBlackListed(refreshToken).Result)
+            {
+                _logger.LogWarning("Attempt to logout with already blacklisted token.");
+
+                return BadRequest(new { message = "Invalid refresh token." });
+            }
+
             _logger.LogInformation(_userManager.GetUserAsync(User)?.Result?.Nickname ?? "No user");
-            // _logger.LogInformation(_signInManager.IsSignedIn(User).ToString());
-            // await _signInManager.SignOutAsync();
-            _logger.LogInformation(HttpContext.Request.Headers["Authorization"].FirstOrDefault()!.Split(' ')[1]);
-            await _tokenService.BlackListToken(HttpContext.Request.Headers["Authorization"].FirstOrDefault()!.Split(' ')[1]);
+
+            await _tokenService.BlackListToken(refreshToken);
+
             _logger.LogInformation("User logged out.");
+
             return Ok(new { message = "Logged out." });
         }
         catch (InvalidOperationException ex)
