@@ -57,6 +57,30 @@ public class TokenService
         return GenerateToken(claims, Convert.ToDouble(_configuration["Jwt:RefreshDurationInMinutes"]));
     }
 
+    public async Task<(string accessToken, string refreshToken)> RefreshTokens(string refreshToken)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(refreshToken);
+        
+        var type = jwtToken.Claims.FirstOrDefault(c => c.Type == "typ")?.Value;
+
+        if (type != "refresh")
+        {
+            throw new InvalidOperationException("Only refresh tokens can be blacklisted.");
+        }
+
+        var email = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Email)?.Value;
+        var id = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+
+        if (email == null)
+            throw new SecurityTokenException("Invalid refresh token.");
+
+        var newAccessToken = GenerateAccessToken(new IdentityUser { Id = id, Email = email });
+        var newRefreshToken = GenerateRefreshToken(new IdentityUser { Id = id, Email = email });
+
+        return (newAccessToken, newRefreshToken);
+    }
+
     public async Task BlackListToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();
