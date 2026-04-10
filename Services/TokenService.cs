@@ -37,7 +37,8 @@ public class TokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Typ, "access")
         };
 
         return GenerateToken(claims, Convert.ToDouble(_configuration["Jwt:AccessDurationInMinutes"]));
@@ -49,7 +50,8 @@ public class TokenService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(JwtRegisteredClaimNames.Typ, "refresh")
         };
 
         return GenerateToken(claims, Convert.ToDouble(_configuration["Jwt:RefreshDurationInMinutes"]));
@@ -59,6 +61,13 @@ public class TokenService
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
+        var type = jwtToken.Claims.FirstOrDefault(c => c.Type == "typ")?.Value;
+
+        if (type != "refresh")
+        {
+            throw new InvalidOperationException("Only refresh tokens can be blacklisted.");
+        }
+
         var exp = jwtToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
         var expSeconds = long.Parse(exp);
         var expirationTime = DateTimeOffset.FromUnixTimeSeconds(expSeconds);

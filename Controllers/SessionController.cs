@@ -48,12 +48,25 @@ public class SessionController : Controller
     [HttpDelete]
     public async Task<IActionResult> Logout()
     {
-        _logger.LogInformation(_userManager.GetUserAsync(User)?.Result?.Nickname ?? "No user");
-        // _logger.LogInformation(_signInManager.IsSignedIn(User).ToString());
-        // await _signInManager.SignOutAsync();
-        _logger.LogInformation(HttpContext.Request.Headers["Authorization"].FirstOrDefault().Split(' ')[1]);
-        _tokenService.BlackListToken(HttpContext.Request.Headers["Authorization"].FirstOrDefault().Split(' ')[1]);
-        _logger.LogInformation("User logged out.");
-        return Ok(new { message = "Logged out." });
+        try
+        {
+            _logger.LogInformation(_userManager.GetUserAsync(User)?.Result?.Nickname ?? "No user");
+            // _logger.LogInformation(_signInManager.IsSignedIn(User).ToString());
+            // await _signInManager.SignOutAsync();
+            _logger.LogInformation(HttpContext.Request.Headers["Authorization"].FirstOrDefault().Split(' ')[1]);
+            await _tokenService.BlackListToken(HttpContext.Request.Headers["Authorization"].FirstOrDefault().Split(' ')[1]);
+            _logger.LogInformation("User logged out.");
+            return Ok(new { message = "Logged out." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError($"{ex.Message}");
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during logout.");
+            return StatusCode(500, new { message = "An error occurred during logout." });
+        }
     }
 }

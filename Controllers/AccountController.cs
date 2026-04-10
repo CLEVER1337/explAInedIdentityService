@@ -18,6 +18,7 @@ public class AccountController : Controller
         _logger = logger;
     }
 
+    [Route("user")]
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
     {
