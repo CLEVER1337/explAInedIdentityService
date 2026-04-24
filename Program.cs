@@ -10,14 +10,33 @@ var builder = WebApplication.CreateBuilder(args);
 // json config
 builder.Configuration.AddJsonFile("appsettings.json");
 
+var dbProvider = builder.Configuration["Database:Provider"] ?? "Postgres";
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration["ConnectionStrings:PostgreSQL"]));
-
-builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["ConnectionStrings:Redis"];
-    options.InstanceName = "explAIned_";
+    if (string.Equals(dbProvider, "InMemory", StringComparison.OrdinalIgnoreCase))
+    {
+        var dbName = builder.Configuration["Database:InMemoryName"] ?? "explAIned-tests";
+        options.UseInMemoryDatabase(dbName);
+    }
+    else
+    {
+        options.UseNpgsql(builder.Configuration["ConnectionStrings:PostgreSQL"]);
+    }
 });
+
+var cacheProvider = builder.Configuration["Cache:Provider"] ?? "Redis";
+if (string.Equals(cacheProvider, "Memory", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+else
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = builder.Configuration["ConnectionStrings:Redis"];
+        options.InstanceName = "explAIned_";
+    });
+}
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -60,11 +79,18 @@ builder.Services.AddScoped<CacheService>();
 
 var app = builder.Build();
 
-// Apply pending migrations automatically so the database schema stays in sync.
+// Apply pending migrations automatically when running against a real relational DB.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
+    if (db.Database.IsRelational())
+    {
+        db.Database.Migrate();
+    }
+    else
+    {
+        db.Database.EnsureCreated();
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -92,3 +118,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.Run();
+
+public partial class Program;
