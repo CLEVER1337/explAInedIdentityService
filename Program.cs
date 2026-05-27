@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -116,6 +117,9 @@ app.MapControllerRoute(
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHttpMetrics();
+app.MapMetrics();
 
 app.Run();
 
