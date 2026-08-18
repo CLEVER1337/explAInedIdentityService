@@ -26,7 +26,6 @@ public class AccountController : Controller
         {
             UserName = model.Email,
             Email = model.Email,
-            Nickname = model.Nickname,
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);

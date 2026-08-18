@@ -28,7 +28,6 @@ public class SessionEndpointsTests : IClassFixture<IdentityWebApplicationFactory
             Email = email,
             Password = password,
             ConfirmPassword = password,
-            Nickname = "nick",
         });
         Assert.Equal(HttpStatusCode.Created, reg.StatusCode);
         return (client, email, password);
