@@ -18,7 +18,6 @@ public class AccountEndpointsTests : IClassFixture<IdentityWebApplicationFactory
             Email = $"ok-{Guid.NewGuid():N}@example.com",
             Password = "Password1",
             ConfirmPassword = "Password1",
-            Nickname = "nick",
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -32,7 +31,6 @@ public class AccountEndpointsTests : IClassFixture<IdentityWebApplicationFactory
             Email = $"weak-{Guid.NewGuid():N}@example.com",
             Password = "abc",
             ConfirmPassword = "abc",
-            Nickname = "nick",
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -47,7 +45,6 @@ public class AccountEndpointsTests : IClassFixture<IdentityWebApplicationFactory
             Email = email,
             Password = "Password1",
             ConfirmPassword = "Password1",
-            Nickname = "nick",
         };
 
         var first = await _client.PostAsJsonAsync("/user", payload);

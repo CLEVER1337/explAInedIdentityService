@@ -1,1 +1,1 @@
-public record RegisterViewModel(string Email, string Nickname, string Password);
+public record RegisterViewModel(string Email, string Password);

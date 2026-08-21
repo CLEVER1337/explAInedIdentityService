@@ -96,8 +96,6 @@ public class SessionController : Controller
                 return BadRequest(new { message = "Invalid refresh token." });
             }
 
-            _logger.LogInformation(_userManager.GetUserAsync(User)?.Result?.Nickname ?? "No user");
-
             await _tokenService.BlackListToken(refreshToken);
 
             _logger.LogInformation("User logged out.");
